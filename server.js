@@ -16,7 +16,7 @@ app.use(express.static("public"));
 
 
 
-moongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/nakedweb",{useNewUrlParser: true});
+moongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/nakedweb");
 
 app.get("/wipe",function(req,res){
     // axios to talk to the website
