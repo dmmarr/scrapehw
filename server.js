@@ -1,19 +1,22 @@
 var express = require("express");
 var morgan = require("morgan");
+var models = require ("./models");
 var moongoose = require ("mongoose");
 var axios = require("axios");
 var cheerio = require("cheerio");
-var models = require ("./models");
+
 
 var app = express();
-var PORT = 3000;
+var PORT = process.env.PORT||3000;
 
 app.use(morgan("dev"));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(express.static("public"));
 
-moongoose.connect("mongodb://localhost/nakedweb",{useNewUrlParser: true});
+
+
+moongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/nakedweb",{useNewUrlParser: true});
 
 app.get("/wipe",function(req,res){
     // axios to talk to the website
@@ -24,8 +27,8 @@ app.get("/wipe",function(req,res){
         info.tweet = $(this)
         .children("p").text()
     // console.log(info.tweet)
-    models.Article.create(info).then(function(article){
-        console.log(article)
+    models.Article.create(info).then(function(dbArticle){
+        console.log(dbArticle)
     }).catch(function(err){
         console.log(err)
     })
@@ -33,18 +36,20 @@ app.get("/wipe",function(req,res){
     res.send("ITS DONEEEEE BABY!!!")
 })
 })
-app.get("/articles/:id",function(req,res){
-    models.Article.findOne({_id:req.params.id}).populate("note")
-    .then(function(article){
-        res.json(article)
+
+app.get("/articles",function(req,res){
+    models.Article.find({}).then(function(dbArticle){
+        res.json(dbArticle)
     }).catch(function(err){
         res.json(err)
     })
 
 });
-app.get("/articles",function(req,res){
-    models.Article.find({}).then(function(article){
-        res.json(article)
+
+app.get("/articles/:id",function(req,res){
+    models.Article.findOne({_id:req.params.id}).populate("note")
+    .then(function(dbArticle){
+        res.json(dbArticle)
     }).catch(function(err){
         res.json(err)
     })
@@ -54,10 +59,10 @@ app.get("/articles",function(req,res){
 app.post("/articles/:id",function(req,res){
     models.note.create(req.body)
     .then(dbNote)
-    return models.Article.update({_id:req.params.id},{note: dbNote._id},{new: true})
+    return models.Article.findOneAndUpdate({_id:req.params.id},{note: dbNote._id},{new: true})
 })
-.then(function(article){
-    res.json(article)
+.then(function(dbArticle){
+    res.json(dbArticle)
     .catch(function(err){
         res.json(err)
     })

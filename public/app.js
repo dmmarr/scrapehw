@@ -8,13 +8,16 @@ $(document).on("click","p", function(){
     var thisId = $(this.attr("data-id"));
     $.ajax({
         method : "GET",
-        url : "/articles/" + thisThing
+        url : "/articles/" + thisId
     })
     .then(function(data){
         console.log(data)
         $("#notes").append("<h2" +data.tweet + "</h2>")
+        $("#notes").append("<input id='tweetInput' name= 'tweet' >")
         $("#notes").append("<textarea id='bodyInput' name ='body' ></textarea>")
+        $("#notes").append("<button data-id=' "+ data._id +"'id='savenote'> Save Note </button>")
         if (data.note){
+            $("#titleInput").val(data.note.title)
             $("#bodyInput").val(data.note.body)
         }
     })
@@ -22,14 +25,13 @@ $(document).on("click","p", function(){
 })
 
 $(document).on("click","#savenote",function(){
-    var thisThing = $(this).attr("data-id")
+    var thisId = $(this).attr("data-id")
     $.ajax({
         method : "POST",
-        url: "/articles/"+ thisThing,
+        url: "/articles/"+ thisId,
         data: {
-         body : $("#bodyInput").val(),
-        title: $("titleInput").val()
-        
+        title: $("titleInput").val(),
+        body : $("#bodyInput").val()
     }
     })
     .then(function(data){
